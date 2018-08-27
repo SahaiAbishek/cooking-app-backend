@@ -1,4 +1,4 @@
-package com.cooking.cooking;
+/*package com.cooking.cooking;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,3 +14,4 @@ public class CookingApplicationTests {
 	}
 
 }
+*/
