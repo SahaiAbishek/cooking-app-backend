@@ -1,15 +1,17 @@
 package com.cooking.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.repository.CrudRepository;
 
-import com.cooking.entity.Meals;
+import com.cooking.entity.MealsEntity;
 
-public interface MealsRepo extends CrudRepository<Meals,Long> {
-	List<Meals> findAll();
-	List<Meals> findByMealType(String type);
-	List<Meals> findByName(String name);
+public interface MealsRepo extends CrudRepository<MealsEntity,Long> {
+	List<MealsEntity> findAll();
+	List<MealsEntity> findByMealType(String type);
+	List<MealsEntity> findByName(String name);
+	Optional<MealsEntity> findById(Long id);
 	@SuppressWarnings("unchecked")
-	Meals save(Meals meal);
+	MealsEntity save(MealsEntity meal);
 }

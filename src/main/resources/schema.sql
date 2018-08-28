@@ -9,5 +9,6 @@ create table meals
 	cusine_type varchar(255), -- indian/american/japanese
 	recipe varchar(255),
 	calories integer,
+	pic blob,
 	primary key(id)
 );

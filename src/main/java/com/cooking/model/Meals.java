@@ -1,30 +1,25 @@
-package com.cooking.entity;
+package com.cooking.model;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import java.io.Serializable;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+public class Meals implements Serializable{
 
-@Entity
-@Table(name = "meals")
-public class Meals {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id")
-	@JsonIgnore
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	private Long id;
-	@Column(name = "name")
+
 	private String name;
-	@Column(name = "meal_type")
+
 	private String mealType;
-	@Column(name = "recipe")
+
 	private String recipe;
-	@Column(name = "calories")
+
 	private Long calories;
+	
+	private byte[] pic;
 
 	public Long getId() {
 		return id;
@@ -64,6 +59,14 @@ public class Meals {
 
 	public void setCalories(Long calories) {
 		this.calories = calories;
+	}
+
+	public byte[] getPic() {
+		return pic;
+	}
+
+	public void setPic(byte[] pic) {
+		this.pic = pic;
 	}
 
 }
