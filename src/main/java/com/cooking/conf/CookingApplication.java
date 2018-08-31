@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -28,9 +29,17 @@ public class CookingApplication implements WebMvcConfigurer {
 		SpringApplication.run(CookingApplication.class, args);
 	}
 
+	
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
-		registry.addMapping("/**");
+		
+		registry.addMapping("/**").allowedMethods(HttpMethod.OPTIONS.name(),
+                HttpMethod.PATCH.name(),
+                HttpMethod.PUT.name(),
+                HttpMethod.DELETE.name(),
+                HttpMethod.GET.name(),
+                HttpMethod.POST.name())
+        .maxAge(3600);
 	}
 
 	@Bean
@@ -38,4 +47,5 @@ public class CookingApplication implements WebMvcConfigurer {
 		return new Docket(DocumentationType.SWAGGER_2).select().apis(RequestHandlerSelectors.any())
 				.paths(PathSelectors.any()).build();
 	}
+	
 }

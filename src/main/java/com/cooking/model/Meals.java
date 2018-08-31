@@ -1,8 +1,9 @@
 package com.cooking.model;
 
 import java.io.Serializable;
+import java.util.Set;
 
-public class Meals implements Serializable{
+public class Meals implements Serializable {
 
 	/**
 	 * 
@@ -15,11 +16,47 @@ public class Meals implements Serializable{
 
 	private String mealType;
 
-	private String recipe;
-
 	private Long calories;
-	
+
+	private String mealCategory;
+
+	private String cusineType;
+
+	private Set<Recipe> recipes;
+
 	private byte[] pic;
+
+	public byte[] getPic() {
+		return pic;
+	}
+
+	public void setPic(byte[] pic) {
+		this.pic = pic;
+	}
+
+	public Set<Recipe> getRecipes() {
+		return recipes;
+	}
+
+	public void setRecipes(Set<Recipe> recipes) {
+		this.recipes = recipes;
+	}
+
+	public String getMealCategory() {
+		return mealCategory;
+	}
+
+	public void setMealCategory(String mealCategory) {
+		this.mealCategory = mealCategory;
+	}
+
+	public String getCusineType() {
+		return cusineType;
+	}
+
+	public void setCusineType(String cusineType) {
+		this.cusineType = cusineType;
+	}
 
 	public Long getId() {
 		return id;
@@ -45,28 +82,12 @@ public class Meals implements Serializable{
 		this.mealType = mealType;
 	}
 
-	public String getRecipe() {
-		return recipe;
-	}
-
-	public void setRecipe(String recipe) {
-		this.recipe = recipe;
-	}
-
 	public Long getCalories() {
 		return calories;
 	}
 
 	public void setCalories(Long calories) {
 		this.calories = calories;
-	}
-
-	public byte[] getPic() {
-		return pic;
-	}
-
-	public void setPic(byte[] pic) {
-		this.pic = pic;
 	}
 
 }

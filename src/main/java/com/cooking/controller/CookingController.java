@@ -1,13 +1,17 @@
 package com.cooking.controller;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,7 +23,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.cooking.entity.MealType;
 import com.cooking.entity.MealsEntity;
+import com.cooking.entity.RecipeEntity;
 import com.cooking.model.Meals;
+import com.cooking.model.Recipe;
 import com.cooking.repository.MealsRepo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,14 +36,44 @@ public class CookingController {
 	@Autowired
 	MealsRepo mealsRepo;
 
-	@RequestMapping(method = RequestMethod.GET, path = "/food/items")
+	@RequestMapping(method = RequestMethod.GET, path = "/food/items", produces = "application/json")
 	@CrossOrigin
-	public List<com.cooking.model.Meals> getAllFoodItems() throws Exception {
+	public ResponseEntity<List<com.cooking.model.Meals>> getAllFoodItems() throws Exception {
 		List<com.cooking.model.Meals> targetList = new ArrayList<>();
 		for (MealsEntity source : mealsRepo.findAll()) {
 			Meals target = new Meals();
 			BeanUtils.copyProperties(target, source);
+			target.setRecipes(null);
+			Set<Recipe> targetRecipes = new HashSet<>();
+			for (RecipeEntity sourceRecipe : source.getRecipes()) {
+				Recipe targetRecipe = new Recipe();
+				BeanUtils.copyProperties(targetRecipe, sourceRecipe);
+				targetRecipes.add(targetRecipe);
+			}
+			target.setRecipes(targetRecipes);
 			targetList.add(target);
+		}
+		return new ResponseEntity<List<Meals>>(targetList, HttpStatus.OK);
+
+	}
+
+	@RequestMapping(method = RequestMethod.GET, path = "/food/items/{name}")
+	@CrossOrigin
+	public List<com.cooking.model.Meals> getFoodByName(@PathVariable String name) throws Exception {
+		List<com.cooking.model.Meals> targetList = new ArrayList<>();
+		for (MealsEntity source : mealsRepo.findByNameContainingIgnoreCase(name)) {
+			Meals target = new Meals();
+			BeanUtils.copyProperties(target, source);
+			target.setRecipes(null);
+			Set<Recipe> targetRecipes = new HashSet<>();
+			for (RecipeEntity sourceRecipe : source.getRecipes()) {
+				Recipe targetRecipe = new Recipe();
+				BeanUtils.copyProperties(targetRecipe, sourceRecipe);
+				targetRecipes.add(targetRecipe);
+			}
+			target.setRecipes(targetRecipes);
+			targetList.add(target);
+
 		}
 		return targetList;
 	}
@@ -50,7 +86,16 @@ public class CookingController {
 		for (MealsEntity source : mealsList) {
 			Meals target = new Meals();
 			BeanUtils.copyProperties(target, source);
+			target.setRecipes(null);
+			Set<Recipe> targetRecipes = new HashSet<>();
+			for (RecipeEntity sourceRecipe : source.getRecipes()) {
+				Recipe targetRecipe = new Recipe();
+				BeanUtils.copyProperties(targetRecipe, sourceRecipe);
+				targetRecipes.add(targetRecipe);
+			}
+			target.setRecipes(targetRecipes);
 			targetList.add(target);
+
 		}
 		return targetList;
 	}
@@ -63,21 +108,72 @@ public class CookingController {
 		if (meal != null) {
 			MealsEntity source = meal.get();
 			BeanUtils.copyProperties(target, source);
-			Base64.encodeBase64(source.getPic());
+			target.setRecipes(null);
+			Set<Recipe> targetRecipes = new HashSet<>();
+			for (RecipeEntity sourceRecipe : source.getRecipes()) {
+				Recipe targetRecipe = new Recipe();
+				BeanUtils.copyProperties(targetRecipe, sourceRecipe);
+				targetRecipes.add(targetRecipe);
+			}
+			target.setRecipes(targetRecipes);
+			// Base64.encodeBase64(source.getPic());
 		}
 		return target;
 	}
 
-	@RequestMapping(method = RequestMethod.POST, path = "/food")
+	@RequestMapping(method = RequestMethod.POST, path = "/food", headers = "content-type=multipart/form-data,application/octet-stream,application/x-www-form-urlencoded", consumes = {
+			"application/x-www-form-urlencoded" })
 	@CrossOrigin
-	public MealsEntity addfood(@RequestBody MealsEntity meal) {
+	public MealsEntity addFood(@RequestParam(required = false) String name,
+			@RequestParam(required = false) String mealCategory, @RequestParam(required = false) String mealType,
+			@RequestParam(required = false) String calories, @RequestParam(required = false) String cusineType,
+			@RequestParam(required = false) String recipeDescription,
+			@RequestParam(required = false) String recipeIngradients,
+			@RequestParam(required = false) String recipePreprationInstructions,
+			@RequestParam(value = "file", required = false) MultipartFile file) throws Exception {
+		MealsEntity meal = new MealsEntity();
+		meal.setName(name);
+		if (null != calories)
+			meal.setCalories(new Long(calories));
+		if (null != cusineType)
+			meal.setCusineType(cusineType);
+		if (null != mealCategory)
+			meal.setMealCategory(mealCategory);
+		if (null != mealType)
+			meal.setMealType(mealType);
+
+		if ((null != recipeDescription) || (null != recipeIngradients) || (null != recipePreprationInstructions)) {
+			Set<RecipeEntity> recipes = new HashSet<>();
+			RecipeEntity recipe = new RecipeEntity();
+			if (null != recipeDescription) {
+				recipe.setDescription(recipeDescription);
+			}
+			if (null != recipeIngradients) {
+				recipe.setIngradients(recipeIngradients);
+			}
+			if (null != recipePreprationInstructions) {
+				recipe.setPreprationInstructions(recipePreprationInstructions);
+			}
+			recipes.add(recipe);
+			meal.setRecipes(recipes);
+		}
+
+		try {
+			if (null != file)
+				meal.setPic(file.getBytes());
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new Exception("multopart error on controller");
+		}
+
 		return mealsRepo.save(meal);
 	}
 
-	@RequestMapping(method = RequestMethod.PUT, path = "/food/item/name/{name}/")
+	@RequestMapping(method = RequestMethod.PUT, path = "/food/item/name/{name}/", headers = "content-type=multipart/form-data,application/octet-stream,application/x-www-form-urlencoded", consumes = {
+			"application/x-www-form-urlencoded" })
 	@CrossOrigin
 	public String updateFood(@PathVariable String name, @RequestBody MealsEntity meal) {
-		List<MealsEntity> meals = mealsRepo.findByName(name);
+		List<MealsEntity> meals = mealsRepo.findByNameContainingIgnoreCase(name);
 		if (meals == null || meals.size() == 0) {
 			System.out.println("Nothing to update");
 			return "Nothing to update";
@@ -96,49 +192,88 @@ public class CookingController {
 
 	@RequestMapping(method = RequestMethod.PUT, path = "/food/ID/{id}/")
 	@CrossOrigin
-	public String updateFoodPic(@PathVariable Long id, @RequestParam("pic") MultipartFile pic) throws IOException {
-		String retval = "";
-		MealsEntity meal = mealsRepo.findById(new Long(id)).get();
-		if (meal == null) {
+	public String updateFoodPic(@PathVariable Long id, @RequestParam("pic") MultipartFile pic) throws Exception {
+
+		MealsEntity sourceMeal = mealsRepo.findById(new Long(id)).get();
+		if (sourceMeal == null) {
 			System.out.println("Nothing to update");
 			return "Nothing to update";
 		} else {
-			meal.setPic(pic.getBytes());
-			MealsEntity resp = mealsRepo.save(meal);
-			ObjectMapper objectMapper = new ObjectMapper();
-
+			MealsEntity destMeal = new MealsEntity();
 			try {
-				retval += objectMapper.writeValueAsString(resp);
-			} catch (JsonProcessingException e) {
-				return e.getMessage();
+				BeanUtils.copyProperties(destMeal, sourceMeal);
+				destMeal.setRecipes(null);
+				Set<RecipeEntity> targetRecipes = new HashSet<>();
+				for (RecipeEntity sourceRecipe : sourceMeal.getRecipes()) {
+					RecipeEntity targetRecipe = new RecipeEntity();
+					BeanUtils.copyProperties(targetRecipe, sourceRecipe);
+					targetRecipes.add(sourceRecipe);
+				}
+				destMeal.setRecipes(targetRecipes);
+			} catch (IllegalAccessException e1) {
+				e1.printStackTrace();
+				throw new Exception(e1.getMessage());
+			} catch (InvocationTargetException e1) {
+				e1.printStackTrace();
+				throw new Exception(e1.getMessage());
 			}
-
-			return "updated : " + retval;
+			destMeal.setPic(pic.getBytes());
+			MealsEntity resp = mealsRepo.save(destMeal);
+			if (null != resp)
+				return "updated : ";
+			else
+				return "failure";
 		}
 	}
 
-	@RequestMapping(method = RequestMethod.POST, path = "/food/test")
+	@RequestMapping(method = RequestMethod.PUT, path = "/food/item/{id}", headers = "content-type=multipart/form-data,application/octet-stream,application/x-www-form-urlencoded", consumes = {
+			"application/x-www-form-urlencoded" })
 	@CrossOrigin
-	public String testMultipart(@RequestParam String name, @RequestParam String mealType, @RequestParam String recipe,
-			@RequestParam String calories, @RequestParam("pic") MultipartFile pic) {
+	public MealsEntity updateFood(@PathVariable Long id, @RequestParam(required = false) String name,
+			@RequestParam(required = false) String mealCategory, @RequestParam(required = false) String mealType,
+			@RequestParam(required = false) String calories, @RequestParam(required = false) String cusineType,
+			@RequestParam(required = false) String recipeDescription,
+			@RequestParam(required = false) String recipeIngradients,
+			@RequestParam(required = false) String recipePreprationInstructions,
+			@RequestParam(value = "file", required = false) MultipartFile file) throws Exception {
 		MealsEntity meal = new MealsEntity();
-		meal.setName(name);
-		meal.setMealType(mealType);
-		meal.setRecipe(recipe);
-		meal.setCalories(new Long(calories));
+		meal.setId(id);
+		if (null != name)
+			meal.setName(name);
+		if (null != calories)
+			meal.setCalories(new Long(calories));
+		if (null != cusineType)
+			meal.setCusineType(cusineType);
+		if (null != mealCategory)
+			meal.setMealCategory(mealCategory);
+		if (null != mealType)
+			meal.setMealType(mealType);
+
+		if ((null != recipeDescription) || (null != recipeIngradients) || (null != recipePreprationInstructions)) {
+			Set<RecipeEntity> recipes = new HashSet<>();
+			RecipeEntity recipe = new RecipeEntity();
+			if (null != recipeDescription) {
+				recipe.setDescription(recipeDescription);
+			}
+			if (null != recipeIngradients) {
+				recipe.setIngradients(recipeIngradients);
+			}
+			if (null != recipePreprationInstructions) {
+				recipe.setPreprationInstructions(recipePreprationInstructions);
+			}
+			recipes.add(recipe);
+			meal.setRecipes(recipes);
+		}
+
 		try {
-			meal.setPic(pic.getBytes());
+			if (null != file)
+				meal.setPic(file.getBytes());
 		} catch (IOException e) {
 			e.printStackTrace();
-			try {
-				throw e;
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+			throw new Exception("multopart error on controller");
 		}
-		mealsRepo.save(meal);
-		return name + " :  success";
+
+		return mealsRepo.save(meal);
 	}
 
 }
