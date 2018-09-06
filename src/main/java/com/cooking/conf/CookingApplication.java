@@ -22,7 +22,8 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @EnableSwagger2
 @EnableJpaRepositories("com.cooking.repository")
 @EntityScan("com.cooking.entity")
-@PropertySource("classpath:${application.environment}/application.properties")
+//@PropertySource("classpath:${application.environment}/application.properties")
+@PropertySource("classpath:local/application.properties")
 public class CookingApplication implements WebMvcConfigurer {
 
 	public static void main(String[] args) {
