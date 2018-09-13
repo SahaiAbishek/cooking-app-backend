@@ -9,6 +9,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,14 +35,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RestController
 public class CookingController {
 
+	Logger logger = LoggerFactory.getLogger(CookingController.class);
+
 	@Autowired
 	MealsRepo mealsRepo;
 
 	@RequestMapping(method = RequestMethod.GET, path = "/food/items", produces = "application/json")
 	@CrossOrigin
 	public ResponseEntity<List<com.cooking.model.Meals>> getAllFoodItems() throws Exception {
+		logger.info("Inside getAllFoodItems");
 		List<com.cooking.model.Meals> targetList = new ArrayList<>();
-		for (MealsEntity source : mealsRepo.findAll()) {
+		List<MealsEntity> meals = null;
+		try {
+			meals = mealsRepo.findAll();
+		} catch (Exception ex) {
+			logger.error("Exception in finding all records");
+			throw new Exception(ex.getMessage());
+		}
+		for (MealsEntity source : meals) {
 			Meals target = new Meals();
 			BeanUtils.copyProperties(target, source);
 			target.setRecipes(null);
@@ -60,6 +72,7 @@ public class CookingController {
 	@RequestMapping(method = RequestMethod.GET, path = "/food/items/{name}")
 	@CrossOrigin
 	public List<com.cooking.model.Meals> getFoodByName(@PathVariable String name) throws Exception {
+		logger.info("Inside getFoodByName");
 		List<com.cooking.model.Meals> targetList = new ArrayList<>();
 		for (MealsEntity source : mealsRepo.findByNameContainingIgnoreCase(name)) {
 			Meals target = new Meals();
@@ -81,6 +94,7 @@ public class CookingController {
 	@RequestMapping(method = RequestMethod.GET, path = "/food/{type}")
 	@CrossOrigin
 	public List<com.cooking.model.Meals> getFoodbyType(@PathVariable MealType type) throws Exception {
+		logger.info("Inside getFoodbyType");
 		List<MealsEntity> mealsList = mealsRepo.findByMealType(type.getMealtype());
 		List<com.cooking.model.Meals> targetList = new ArrayList<>();
 		for (MealsEntity source : mealsList) {
@@ -103,6 +117,7 @@ public class CookingController {
 	@RequestMapping(method = RequestMethod.GET, path = "/food/item/ID/{id}")
 	@CrossOrigin
 	public com.cooking.model.Meals getFoodbyId(@PathVariable Long id) throws Exception {
+		logger.info("Inside getFoodbyId");
 		Optional<MealsEntity> meal = mealsRepo.findById(id);
 		com.cooking.model.Meals target = new com.cooking.model.Meals();
 		if (meal != null) {
@@ -131,6 +146,7 @@ public class CookingController {
 			@RequestParam(required = false) String recipeIngradients,
 			@RequestParam(required = false) String recipePreprationInstructions,
 			@RequestParam(value = "file", required = false) MultipartFile file) throws Exception {
+		logger.info("Inside addFood");
 		MealsEntity meal = new MealsEntity();
 		meal.setName(name);
 		if (null != calories)
@@ -173,6 +189,7 @@ public class CookingController {
 			"application/x-www-form-urlencoded" })
 	@CrossOrigin
 	public String updateFood(@PathVariable String name, @RequestBody MealsEntity meal) {
+		logger.info("Inside updateFood");
 		List<MealsEntity> meals = mealsRepo.findByNameContainingIgnoreCase(name);
 		if (meals == null || meals.size() == 0) {
 			System.out.println("Nothing to update");
@@ -193,7 +210,7 @@ public class CookingController {
 	@RequestMapping(method = RequestMethod.PUT, path = "/food/ID/{id}/")
 	@CrossOrigin
 	public String updateFoodPic(@PathVariable Long id, @RequestParam("pic") MultipartFile pic) throws Exception {
-
+		logger.info("Inside updateFoodPic");
 		MealsEntity sourceMeal = mealsRepo.findById(new Long(id)).get();
 		if (sourceMeal == null) {
 			System.out.println("Nothing to update");
@@ -236,11 +253,12 @@ public class CookingController {
 			@RequestParam(required = false) String recipeIngradients,
 			@RequestParam(required = false) String recipePreprationInstructions,
 			@RequestParam(value = "file", required = false) MultipartFile file) throws Exception {
+		logger.info("Inside updateFood");
 		MealsEntity meal = new MealsEntity();
 		meal.setId(id);
 		if (null != name)
 			meal.setName(name);
-		if (null != calories)
+		if (null != calories && calories.length() > 0)
 			meal.setCalories(new Long(calories));
 		if (null != cusineType)
 			meal.setCusineType(cusineType);
