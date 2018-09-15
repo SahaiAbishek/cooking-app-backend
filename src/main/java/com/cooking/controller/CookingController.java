@@ -57,10 +57,12 @@ public class CookingController {
 			BeanUtils.copyProperties(target, source);
 			target.setRecipes(null);
 			Set<Recipe> targetRecipes = new HashSet<>();
-			for (RecipeEntity sourceRecipe : source.getRecipes()) {
-				Recipe targetRecipe = new Recipe();
-				BeanUtils.copyProperties(targetRecipe, sourceRecipe);
-				targetRecipes.add(targetRecipe);
+			if (null != source.getRecipes() && source.getRecipes().size() >0 ) {
+				for (RecipeEntity sourceRecipe : source.getRecipes()) {
+					Recipe targetRecipe = new Recipe();
+					BeanUtils.copyProperties(targetRecipe, sourceRecipe);
+					targetRecipes.add(targetRecipe);
+				}
 			}
 			target.setRecipes(targetRecipes);
 			targetList.add(target);
