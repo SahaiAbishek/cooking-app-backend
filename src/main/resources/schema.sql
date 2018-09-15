@@ -1,6 +1,6 @@
 --create database cooking
 
-create table meals
+create table MEALS
 (
 	meal_id integer auto_increment,
  	name varchar(255),
@@ -22,5 +22,8 @@ create table RECIPE
 	VIDEO VARCHAR(1000),
 	MEAL_ID INTEGER,
 	primary key(RECIPE_ID),
-	FOREIGN KEY(MEAL_ID) REFERENCES MEALS(MEAL_ID)
+	FOREIGN KEY fk_meal_id(MEAL_ID)
+	REFERENCES MEALS(MEAL_ID)
+	ON UPDATE CASCADE
+   	ON DELETE RESTRICT
 );
