@@ -1,16 +1,19 @@
 package com.cooking.entity;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -48,8 +51,19 @@ public class MealsEntity implements Serializable {
 	private byte[] pic;
 
 	@OneToMany(cascade = CascadeType.ALL)
-	@JoinColumn(name="MEAL_ID")
+	@JoinColumn(name = "MEAL_ID")
 	private Set<RecipeEntity> recipes;
+
+	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "meals")
+	private Set<UserEntity> users = new HashSet<>();
+
+	public Set<UserEntity> getUsers() {
+		return users;
+	}
+
+	public void setUsers(Set<UserEntity> users) {
+		this.users = users;
+	}
 
 	public Set<RecipeEntity> getRecipes() {
 		return recipes;

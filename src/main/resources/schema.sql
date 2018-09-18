@@ -1,4 +1,17 @@
 --create database cooking
+create table user
+(
+	user_id integer auto_increment,
+ 	email varchar(1000),
+	password text, 
+	primary key(user_id)
+);
+
+create table user_meals
+(
+	user_id integer,
+	meal_id integer
+);
 
 create table meals
 (
