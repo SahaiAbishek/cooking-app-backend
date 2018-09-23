@@ -51,7 +51,7 @@ public class UserController {
 
 	@RequestMapping(method = RequestMethod.GET, path = "/user/{email}/{password}")
 	@CrossOrigin
-	public boolean validateUser(@PathVariable String email, @PathVariable String password) {
+	public Boolean validateUser(@PathVariable String email, @PathVariable String password) {
 		logger.info("Inside validateUser");
 		password = DigestUtils.sha256Hex(password);
 		try {
