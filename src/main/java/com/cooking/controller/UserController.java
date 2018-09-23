@@ -52,6 +52,7 @@ public class UserController {
 	@RequestMapping(method = RequestMethod.GET, path = "/user/{email}/{password}")
 	@CrossOrigin
 	public boolean validateUser(@PathVariable String email, @PathVariable String password) {
+		logger.info("Inside validateUser");
 		password = DigestUtils.sha256Hex(password);
 		try {
 			List<UserEntity> users = userRepo.findByEmail(email);
@@ -62,6 +63,7 @@ public class UserController {
 					}
 				}
 			} else {
+				logger.info("User found returning true");
 				return false;
 			}
 		} catch (Exception ex) {
