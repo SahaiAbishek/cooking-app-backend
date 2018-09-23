@@ -51,7 +51,7 @@ public class UserController {
 
 	@RequestMapping(method = RequestMethod.GET, path = "/user/{email}/{password}")
 	@CrossOrigin
-	public Boolean validateUser(@PathVariable String email, @PathVariable String password) {
+	public String validateUser(@PathVariable String email, @PathVariable String password) {
 		logger.info("Inside validateUser");
 		password = DigestUtils.sha256Hex(password);
 		try {
@@ -59,19 +59,20 @@ public class UserController {
 			if (null != users && users.size() > 0) {
 				for (UserEntity user : users) {
 					if (password.equals(user.getPassword())) {
-						return true;
+						logger.info("User found returning true");
+						return "true";
 					}
 				}
 			} else {
-				logger.info("User found returning true");
-				return false;
+				logger.info("User not found returning true");
+				return "false";
 			}
 		} catch (Exception ex) {
 			logger.error("Exception in saving user");
 			throw ex;
 		}
-
-		return false;
+		logger.info("User not found returning true");
+		return "false";
 	}
 	
 	@RequestMapping(method = RequestMethod.GET, path = "/user/favouret/{userId}/{mealId}")
