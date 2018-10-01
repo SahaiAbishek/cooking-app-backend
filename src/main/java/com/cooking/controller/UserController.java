@@ -11,13 +11,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cooking.entity.MealPlanEntity;
 import com.cooking.entity.MealsEntity;
 import com.cooking.entity.UserEntity;
+import com.cooking.repository.MealPlanRepo;
 import com.cooking.repository.MealsRepo;
 import com.cooking.repository.UserRepo;
 
@@ -28,13 +31,17 @@ public class UserController {
 
 	@Autowired
 	private UserRepo userRepo;
-	
+
 	@Autowired
 	private MealsRepo mealsRepo;
 
+	@Autowired
+	private MealPlanRepo mealPlanRepo;
+
 	@RequestMapping(method = RequestMethod.POST, path = "/user")
 	@CrossOrigin
-	public UserEntity saveUser(@RequestParam(required = true) String email, @RequestParam(required = true) String password) {
+	public UserEntity saveUser(@RequestParam(required = true) String email,
+			@RequestParam(required = true) String password) {
 		UserEntity user = new UserEntity();
 		user.setEmail(email);
 		user.setPassword(DigestUtils.sha256Hex(password));
@@ -52,7 +59,7 @@ public class UserController {
 	@RequestMapping(method = RequestMethod.GET, path = "/user/{email}/{password}")
 	@CrossOrigin
 	public String validateUser(@PathVariable String email, @PathVariable String password) {
-		logger.info("Inside validateUser "+ email + "  "+password);
+		logger.info("Inside validateUser " + email + " -- " + password);
 		password = DigestUtils.sha256Hex(password);
 		try {
 			List<UserEntity> users = userRepo.findByEmail(email);
@@ -74,18 +81,34 @@ public class UserController {
 		logger.info("User not found returning false");
 		return "false";
 	}
-	
+
 	@RequestMapping(method = RequestMethod.GET, path = "/user/favouret/{userId}/{mealId}")
 	@CrossOrigin
 	public UserEntity addUserMeal(@PathVariable long userId, @PathVariable long mealId) throws Exception {
 		Optional<UserEntity> userOptional = userRepo.findById(userId);
 		UserEntity user = userOptional.get();
 		Optional<MealsEntity> mealOptional = mealsRepo.findById(mealId);
-		MealsEntity meal =mealOptional.get();
+		MealsEntity meal = mealOptional.get();
 		Set<MealsEntity> mealSet = new HashSet<>();
 		mealSet.add(meal);
 		user.setMeals(mealSet);
 		UserEntity retUser = userRepo.save(user);
 		return retUser;
+	}
+
+	@RequestMapping(method = RequestMethod.POST, path = "/user/meal-plan")
+	@CrossOrigin
+	public boolean userMealPlan(@RequestBody List<MealPlanEntity> mealPlans) throws Exception {
+		logger.info("Inside userMealPlan");
+		for (MealPlanEntity mealPlan : mealPlans) {
+			try {
+				mealPlanRepo.save(mealPlan);
+			} catch (Exception ex) {
+				logger.error("Exception in saving meal plan" + ex.getMessage());
+				throw new Exception(ex.getMessage());
+			}
+		}
+		logger.info("Saved all successfully");
+		return true;
 	}
 }

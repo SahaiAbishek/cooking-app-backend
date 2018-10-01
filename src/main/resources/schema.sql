@@ -38,3 +38,15 @@ create table recipe
 	INDEX `FK_RECIPE_meals` (`MEAL_ID`),
 	CONSTRAINT `FK_RECIPE_meals` FOREIGN KEY (`MEAL_ID`) REFERENCES `meals` (`meal_id`)
 );
+
+create table meal_plan
+(
+	id integer auto_increment,
+ 	day_of_week varchar(255),
+	meal_type varchar(255), 
+	meal_name varchar(999), 
+	user_id int,
+	primary key(id),
+	INDEX `fk_user` (`user_id`),
+	CONSTRAINT `fk_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`)
+);
