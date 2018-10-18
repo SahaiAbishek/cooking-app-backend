@@ -1,5 +1,5 @@
 --create database cooking
-create table user
+create table app_users
 (
 	user_id integer auto_increment,
  	email varchar(1000),

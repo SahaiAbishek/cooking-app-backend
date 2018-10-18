@@ -21,7 +21,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
-@Table(name = "user")
+@Table(name = "app_users")
 public class UserEntity implements Serializable {
 
 	private static final long serialVersionUID = 1L;
