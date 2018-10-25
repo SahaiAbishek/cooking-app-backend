@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cooking.entity.MealPlanEntity;
 import com.cooking.entity.MealsEntity;
 import com.cooking.entity.UserEntity;
+import com.cooking.model.User;
 import com.cooking.repository.MealPlanRepo;
 import com.cooking.repository.MealsRepo;
 import com.cooking.repository.UserRepo;
@@ -37,6 +38,31 @@ public class UserController {
 
 	@Autowired
 	private MealPlanRepo mealPlanRepo;
+
+	@RequestMapping(method = RequestMethod.POST, path = "/user/add")
+	@CrossOrigin
+	public UserEntity addUser(@RequestBody User user) throws Exception {
+		if (null != user) {
+			UserEntity userEntity = new UserEntity();
+			if (user.getEmail() != null) {
+				userEntity.setEmail(user.getEmail());
+			}
+			if (user.getPassword() != null) {
+				userEntity.setPassword(DigestUtils.sha256Hex(user.getPassword()));
+			}
+			UserEntity retuser = null;
+			try {
+				retuser = userRepo.save(userEntity);
+			} catch (Exception ex) {
+				logger.error("Exception in saving user");
+				throw ex;
+			}
+			return retuser;
+		} else {
+			throw new Exception("Please enter login details");
+		}
+
+	}
 
 	@RequestMapping(method = RequestMethod.POST, path = "/user")
 	@CrossOrigin

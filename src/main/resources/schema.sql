@@ -35,8 +35,8 @@ create table recipe
 	VIDEO VARCHAR(1000),
 	MEAL_ID INTEGER,
 	primary key(RECIPE_ID),
-	INDEX `FK_RECIPE_meals` (`MEAL_ID`),
-	CONSTRAINT `FK_RECIPE_meals` FOREIGN KEY (`MEAL_ID`) REFERENCES `meals` (`meal_id`)
+--	,INDEX `FK_RECIPE_meals` (`MEAL_ID`),
+	FOREIGN KEY (`MEAL_ID`) REFERENCES `meals` (`meal_id`)
 );
 
 create table meal_plan
@@ -47,6 +47,21 @@ create table meal_plan
 	meal_name varchar(999), 
 	user_id int,
 	primary key(id),
-	INDEX `fk_user` (`user_id`),
-	CONSTRAINT `fk_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`)
+--	INDEX `fk_user` (`user_id`),
+	FOREIGN KEY (`user_id`) REFERENCES `app_users` (`user_id`)
+);
+
+create table user_shoes
+(
+	id integer auto_increment,
+ 	brand varchar(255),
+	model varchar(255),
+	start_date date,
+	end_date date,
+	miles integer,
+	pic blob,
+	user_id int,
+	primary key(id),
+--	INDEX `fk_user` (`user_id`),
+	FOREIGN KEY (`user_id`) REFERENCES `app_users` (`user_id`)
 );
