@@ -12,7 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Lob;
-import javax.persistence.OneToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -48,9 +48,9 @@ public class ShoeEntity implements Serializable {
 	@Column(name = "pic")
 	private byte[] pic;
 
-	@OneToMany(cascade = CascadeType.ALL)
+	@ManyToOne(cascade=CascadeType.ALL)
 	@JoinColumn(name = "user_id")
-	private Set<UserEntity> user;
+	private UserEntity user;
 
 	public ShoeEntity() {
 	}
@@ -64,7 +64,7 @@ public class ShoeEntity implements Serializable {
 		this.endDate = endDate;
 		this.miles = miles;
 		this.pic = pic;
-		this.user = user;
+		// this.user = user;
 	}
 
 	public Long getId() {
@@ -123,11 +123,11 @@ public class ShoeEntity implements Serializable {
 		this.pic = pic;
 	}
 
-	public Set<UserEntity> getUser() {
+	public UserEntity getUser() {
 		return user;
 	}
 
-	public void setUser(Set<UserEntity> user) {
+	public void setUser(UserEntity user) {
 		this.user = user;
 	}
 

@@ -1,14 +1,19 @@
 package com.cooking.controller;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,9 +21,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.cooking.entity.MealPlanEntity;
 import com.cooking.entity.MealsEntity;
+import com.cooking.entity.ShoeEntity;
 import com.cooking.entity.UserEntity;
 import com.cooking.model.User;
 import com.cooking.repository.MealPlanRepo;
@@ -137,4 +144,56 @@ public class UserController {
 		logger.info("Saved all successfully");
 		return true;
 	}
+
+	@RequestMapping(method = RequestMethod.POST, path = "/user/shoe")
+	@CrossOrigin
+	public ResponseEntity<User> addShoe(@RequestParam(required = false) String brand,
+			@RequestParam(required = false) String model,
+			@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-mm-dd") Date startDate,
+			@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-mm-dd") Date endDate,
+			@RequestParam(required = false) Long miles,
+			@RequestParam(value = "file", required = false) MultipartFile file,
+			@RequestParam(value = "userID", required = false) Long userId) throws Exception {
+		logger.debug("Inside addShoe..");
+		Optional<UserEntity> optionalUser = userRepo.findById(userId);
+		if (null != optionalUser) {
+			UserEntity user = optionalUser.get();
+			ShoeEntity shoeEntity = new ShoeEntity();
+			shoeEntity.setBrand(brand);
+			shoeEntity.setModel(model);
+			shoeEntity.setStartDate(startDate);
+			shoeEntity.setEndDate(endDate);
+			shoeEntity.setMiles(miles);
+			if (null != file) {
+				shoeEntity.setPic(file.getBytes());
+			}
+			shoeEntity.setUser(user);
+			Set<ShoeEntity> shoeEntities = new HashSet<>();
+			shoeEntities.add(shoeEntity);
+			user.setShoes(shoeEntities);
+			logger.debug("Trying to insert..");
+			UserEntity sourceUser = userRepo.save(user);
+			logger.debug("Inserted successfully." + sourceUser);
+			User targetUser = new User();
+			BeanUtils.copyProperties(targetUser, sourceUser);
+			return new ResponseEntity<>(targetUser, HttpStatus.OK);
+		}
+
+		return new ResponseEntity<>(HttpStatus.FAILED_DEPENDENCY);
+	}
+	
+//	@RequestMapping(method = RequestMethod.POST, path = "/user/shoes", produces = "application/json")
+//	@CrossOrigin
+//	public ResponseEntity<List<Shoe>> getAllShoes() throws Exception {
+//		logger.debug("Inside getAllShoes..");
+//		Iterable<ShoeEntity> shoeEntities = shoeRepo.findAll();
+//		List<Shoe> targetShoes = new ArrayList<>();
+//		for (ShoeEntity sourceShoe : shoeEntities) {
+//			Shoe targetShoe = new Shoe();
+//			BeanUtils.copyProperties(targetShoe, sourceShoe);
+//			targetShoes.add(targetShoe);
+//		}
+//
+//		return new ResponseEntity<>(targetShoes, HttpStatus.OK);
+//	}
 }
