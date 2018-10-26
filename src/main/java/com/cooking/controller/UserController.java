@@ -27,6 +27,7 @@ import com.cooking.entity.MealPlanEntity;
 import com.cooking.entity.MealsEntity;
 import com.cooking.entity.ShoeEntity;
 import com.cooking.entity.UserEntity;
+import com.cooking.model.Shoe;
 import com.cooking.model.User;
 import com.cooking.repository.MealPlanRepo;
 import com.cooking.repository.MealsRepo;
@@ -181,19 +182,26 @@ public class UserController {
 
 		return new ResponseEntity<>(HttpStatus.FAILED_DEPENDENCY);
 	}
-	
-//	@RequestMapping(method = RequestMethod.POST, path = "/user/shoes", produces = "application/json")
-//	@CrossOrigin
-//	public ResponseEntity<List<Shoe>> getAllShoes() throws Exception {
-//		logger.debug("Inside getAllShoes..");
-//		Iterable<ShoeEntity> shoeEntities = shoeRepo.findAll();
-//		List<Shoe> targetShoes = new ArrayList<>();
-//		for (ShoeEntity sourceShoe : shoeEntities) {
-//			Shoe targetShoe = new Shoe();
-//			BeanUtils.copyProperties(targetShoe, sourceShoe);
-//			targetShoes.add(targetShoe);
-//		}
-//
-//		return new ResponseEntity<>(targetShoes, HttpStatus.OK);
-//	}
+
+	@RequestMapping(method = RequestMethod.POST, path = "/user/shoes/{id}", produces = "application/json")
+	@CrossOrigin
+	public ResponseEntity<Set<Shoe>> getShoesByUserId(@PathVariable Long id) throws Exception {
+		logger.debug("Inside getShoesByUserId..");
+		Optional<UserEntity> optionalUserEntity = userRepo.findById(id);
+		if (null != optionalUserEntity) {
+			UserEntity userentity = optionalUserEntity.get();
+			Set<ShoeEntity> shoeEntities = userentity.getShoes();
+			Set<Shoe> shoes = new HashSet<>();
+			if (null != shoeEntities) {
+				for (ShoeEntity sourceShoe : shoeEntities) {
+					Shoe targetshoe = new Shoe();
+					BeanUtils.copyProperties(targetshoe, sourceShoe);
+					shoes.add(targetshoe);
+				}
+				return new ResponseEntity<>(shoes,HttpStatus.OK);
+			}
+		}
+
+		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+	}
 }
