@@ -11,5 +11,5 @@ public interface UserRepo extends CrudRepository<UserEntity, Long> {
 	@SuppressWarnings("unchecked")
 	UserEntity save(UserEntity user);
 	List<UserEntity> findByEmail(String email);
-	Optional<UserEntity> findById(Long id);
+	Optional<UserEntity> findByEmail(Long id);
 }

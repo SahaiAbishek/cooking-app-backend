@@ -153,55 +153,59 @@ public class UserController {
 			@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-mm-dd") Date startDate,
 			@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-mm-dd") Date endDate,
 			@RequestParam(required = false) Long miles,
+			@RequestParam(required = false) String size,
 			@RequestParam(value = "file", required = false) MultipartFile file,
-			@RequestParam(value = "userID", required = false) Long userId) throws Exception {
+			@RequestParam(value = "email", required = false) String email) throws Exception {
 		logger.debug("Inside addShoe..");
-		Optional<UserEntity> optionalUser = userRepo.findById(userId);
-		if (null != optionalUser) {
-			UserEntity user = optionalUser.get();
-			ShoeEntity shoeEntity = new ShoeEntity();
-			shoeEntity.setBrand(brand);
-			shoeEntity.setModel(model);
-			shoeEntity.setStartDate(startDate);
-			shoeEntity.setEndDate(endDate);
-			shoeEntity.setMiles(miles);
-			if (null != file) {
-				shoeEntity.setPic(file.getBytes());
-			}
-			shoeEntity.setUser(user);
-			Set<ShoeEntity> shoeEntities = new HashSet<>();
-			shoeEntities.add(shoeEntity);
-			user.setShoes(shoeEntities);
-			logger.debug("Trying to insert..");
-			UserEntity sourceUser = userRepo.save(user);
-			logger.debug("Inserted successfully." + sourceUser);
-			User targetUser = new User();
-			BeanUtils.copyProperties(targetUser, sourceUser);
-			return new ResponseEntity<>(targetUser, HttpStatus.OK);
+		List<UserEntity> users = userRepo.findByEmail(email);
+		if (null != users) {
+			for (UserEntity user : users) {
+				ShoeEntity shoeEntity = new ShoeEntity();
+				shoeEntity.setBrand(brand);
+				shoeEntity.setModel(model);
+				shoeEntity.setStartDate(startDate);
+				shoeEntity.setEndDate(endDate);
+				shoeEntity.setMiles(miles);
+				if (null != file) {
+					shoeEntity.setPic(file.getBytes());
+				}
+				shoeEntity.setUser(user);
+				Set<ShoeEntity> shoeEntities = new HashSet<>();
+				shoeEntities.add(shoeEntity);
+				user.setShoes(shoeEntities);
+				logger.debug("Trying to insert..");
+				UserEntity sourceUser = userRepo.save(user);
+				logger.debug("Inserted successfully." + sourceUser);
+				User targetUser = new User();
+				BeanUtils.copyProperties(targetUser, sourceUser);
+				return new ResponseEntity<>(targetUser, HttpStatus.OK);
+			 }
+
 		}
 
 		return new ResponseEntity<>(HttpStatus.FAILED_DEPENDENCY);
 	}
 
-	@RequestMapping(method = RequestMethod.POST, path = "/user/shoes/{id}", produces = "application/json")
+	@RequestMapping(method = RequestMethod.POST, path = "/user/shoes/{email}", produces = "application/json")
 	@CrossOrigin
-	public ResponseEntity<Set<Shoe>> getShoesByUserId(@PathVariable Long id) throws Exception {
+	public ResponseEntity<Set<Shoe>> getShoesByUserEmail(@PathVariable String email) throws Exception {
 		logger.debug("Inside getShoesByUserId..");
-		Optional<UserEntity> optionalUserEntity = userRepo.findById(id);
-		if (null != optionalUserEntity) {
-			UserEntity userentity = optionalUserEntity.get();
-			Set<ShoeEntity> shoeEntities = userentity.getShoes();
-			Set<Shoe> shoes = new HashSet<>();
-			if (null != shoeEntities) {
-				for (ShoeEntity sourceShoe : shoeEntities) {
-					Shoe targetshoe = new Shoe();
-					BeanUtils.copyProperties(targetshoe, sourceShoe);
-					shoes.add(targetshoe);
+		List<UserEntity> users = userRepo.findByEmail(email);
+		if (null != users) {
+			for (UserEntity userentity : users) {
+				Set<ShoeEntity> shoeEntities = userentity.getShoes();
+				Set<Shoe> shoes = new HashSet<>();
+				if (null != shoeEntities) {
+					for (ShoeEntity sourceShoe : shoeEntities) {
+						Shoe targetshoe = new Shoe();
+						BeanUtils.copyProperties(targetshoe, sourceShoe);
+						shoes.add(targetshoe);
+					}
+					return new ResponseEntity<>(shoes, HttpStatus.OK);
 				}
-				return new ResponseEntity<>(shoes,HttpStatus.OK);
 			}
 		}
 
-		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 }
