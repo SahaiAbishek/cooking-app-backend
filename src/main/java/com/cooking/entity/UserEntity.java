@@ -44,7 +44,7 @@ public class UserEntity implements Serializable {
 			@JoinColumn(name = "meal_id") })
 	private Set<MealsEntity> meals = new HashSet<>();
 
-	@OneToMany(mappedBy="user",cascade = CascadeType.ALL)
+	@OneToMany(mappedBy="user",cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	private Set<ShoeEntity> shoes;
 
 	public Set<MealsEntity> getMeals() {
