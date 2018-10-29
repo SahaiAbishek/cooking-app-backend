@@ -190,7 +190,7 @@ public class UserController {
 		return new ResponseEntity<>(HttpStatus.FAILED_DEPENDENCY);
 	}
 
-	@RequestMapping(method = RequestMethod.POST, path = "/user/shoes/{email}", produces = "application/json")
+	@RequestMapping(method = RequestMethod.GET, path = "/user/shoes/{email}", produces = "application/json")
 	@CrossOrigin
 	public ResponseEntity<Set<Shoe>> getShoesByUserEmail(@PathVariable String email) throws Exception {
 		logger.debug("Inside getShoesByUserId..");
