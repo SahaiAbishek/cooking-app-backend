@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.transaction.Transactional;
+
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
@@ -34,6 +36,7 @@ import com.cooking.repository.MealsRepo;
 import com.cooking.repository.UserRepo;
 
 @RestController
+@Transactional
 public class UserController {
 
 	Logger logger = LoggerFactory.getLogger(UserController.class);

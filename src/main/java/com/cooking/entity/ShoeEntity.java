@@ -44,7 +44,7 @@ public class ShoeEntity implements Serializable {
 	@Column(name = "miles")
 	private Long miles;
 
-//	@Lob
+	@Lob
 	@Column(name = "pic")
 	private byte[] pic;
 
