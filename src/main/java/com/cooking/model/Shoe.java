@@ -19,7 +19,7 @@ public class Shoe implements Serializable {
 
 	private Long miles;
 
-	private Long userId;
+	private Long userEmail;
 
 	private byte[] pic;
 
@@ -71,12 +71,12 @@ public class Shoe implements Serializable {
 		this.miles = miles;
 	}
 
-	public Long getUserId() {
-		return userId;
+	public Long getUserEmail() {
+		return userEmail;
 	}
 
-	public void setUserId(Long userId) {
-		this.userId = userId;
+	public void setUserEmail(Long userEmail) {
+		this.userEmail = userEmail;
 	}
 
 	public byte[] getPic() {
