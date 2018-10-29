@@ -205,7 +205,7 @@ public class UserController {
 						BeanUtils.copyProperties(targetshoe, sourceShoe);
 						shoes.add(targetshoe);
 					}
-					return new ResponseEntity<>(shoes, HttpStatus.OK);
+					return new ResponseEntity<Set<Shoe>>(shoes, HttpStatus.OK);
 				}
 			}
 		}
