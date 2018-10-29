@@ -1,5 +1,6 @@
 package com.cooking.controller;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +11,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.cooking.entity.MealPlanEntity;
 import com.cooking.entity.MealsEntity;
@@ -145,27 +148,27 @@ public class UserController {
 
 	@RequestMapping(method = RequestMethod.POST, path = "/user/shoe")
 	@CrossOrigin
-	public ResponseEntity<User> addShoe(@RequestBody Shoe shoe) throws Exception {
+	public ResponseEntity<User> addShoe(@RequestParam(required = false) String brand,
+			@RequestParam(required = false) String model,
+			@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-mm-dd") Date startDate,
+			@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-mm-dd") Date endDate,
+			@RequestParam(required = false) Long miles,
+			@RequestParam(required = false) String size,
+			@RequestParam(value = "file", required = false) MultipartFile file,
+			@RequestParam(value = "email", required = false) String email) throws Exception {
 		logger.debug("Inside addShoe..");
-		if (null != shoe && shoe.getUserEmail() != null) {
-			Optional<UserEntity> users = userRepo.findByEmail(shoe.getUserEmail());
-			if (null != users) {
-				UserEntity user = users.get();
+		List<UserEntity> users = userRepo.findByEmail(email);
+		if (null != users) {
+			for (UserEntity user : users) {
 				ShoeEntity shoeEntity = new ShoeEntity();
-				if (shoe.getBrand() != null)
-					shoeEntity.setBrand(shoe.getBrand());
-
-				if (shoe.getModel() != null)
-					shoeEntity.setModel(shoe.getModel());
-
-				if (shoe.getStartDate() != null)
-					shoeEntity.setStartDate(shoe.getStartDate());
-				if (shoe.getEndDate() != null)
-					shoeEntity.setEndDate(shoe.getEndDate());
-				if (shoe.getMiles() != null)
-					shoeEntity.setMiles(shoe.getMiles());
-				if (null != shoe.getPic())
-					shoeEntity.setPic(shoe.getPic());
+				shoeEntity.setBrand(brand);
+				shoeEntity.setModel(model);
+				shoeEntity.setStartDate(startDate);
+				shoeEntity.setEndDate(endDate);
+				shoeEntity.setMiles(miles);
+				if (null != file) {
+					shoeEntity.setPic(file.getBytes());
+				}
 				shoeEntity.setUser(user);
 				Set<ShoeEntity> shoeEntities = new HashSet<>();
 				shoeEntities.add(shoeEntity);
@@ -176,12 +179,11 @@ public class UserController {
 				User targetUser = new User();
 				BeanUtils.copyProperties(targetUser, sourceUser);
 				return new ResponseEntity<>(targetUser, HttpStatus.OK);
+			 }
 
-			}
 		}
 
 		return new ResponseEntity<>(HttpStatus.FAILED_DEPENDENCY);
-
 	}
 
 	@RequestMapping(method = RequestMethod.POST, path = "/user/shoes/{email}", produces = "application/json")
