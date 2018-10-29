@@ -48,7 +48,7 @@ public class ShoeEntity implements Serializable {
 	@Column(name = "pic")
 	private byte[] pic;
 
-	@ManyToOne(cascade=CascadeType.ALL)
+	@ManyToOne(cascade={CascadeType.PERSIST, CascadeType.MERGE})
 	@JoinColumn(name = "user_id")
 	private UserEntity user;
 
