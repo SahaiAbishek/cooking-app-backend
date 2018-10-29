@@ -152,8 +152,7 @@ public class UserController {
 			@RequestParam(required = false) String model,
 			@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-mm-dd") Date startDate,
 			@RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-mm-dd") Date endDate,
-			@RequestParam(required = false) Long miles,
-			@RequestParam(required = false) String size,
+			@RequestParam(required = false) Long miles, @RequestParam(required = false) String size,
 			@RequestParam(value = "file", required = false) MultipartFile file,
 			@RequestParam(value = "email", required = false) String email) throws Exception {
 		logger.debug("Inside addShoe..");
@@ -161,11 +160,16 @@ public class UserController {
 		if (null != users) {
 			for (UserEntity user : users) {
 				ShoeEntity shoeEntity = new ShoeEntity();
-				shoeEntity.setBrand(brand);
-				shoeEntity.setModel(model);
-				shoeEntity.setStartDate(startDate);
-				shoeEntity.setEndDate(endDate);
-				shoeEntity.setMiles(miles);
+				if (null != brand)
+					shoeEntity.setBrand(brand);
+				if (null != model)
+					shoeEntity.setModel(model);
+				if (null != startDate)
+					shoeEntity.setStartDate(startDate);
+				if (null != endDate)
+					shoeEntity.setEndDate(endDate);
+				if (null != miles)
+					shoeEntity.setMiles(miles);
 				if (null != file) {
 					shoeEntity.setPic(file.getBytes());
 				}
@@ -179,7 +183,7 @@ public class UserController {
 				User targetUser = new User();
 				BeanUtils.copyProperties(targetUser, sourceUser);
 				return new ResponseEntity<>(targetUser, HttpStatus.OK);
-			 }
+			}
 
 		}
 
