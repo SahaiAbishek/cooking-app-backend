@@ -23,12 +23,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.cooking.entity.MealPlanEntity;
 import com.cooking.entity.MealType;
 import com.cooking.entity.MealsEntity;
 import com.cooking.entity.RecipeEntity;
+import com.cooking.entity.UserEntity;
 import com.cooking.model.Meals;
 import com.cooking.model.Recipe;
+import com.cooking.repository.MealPlanRepo;
 import com.cooking.repository.MealsRepo;
+import com.cooking.repository.UserRepo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -38,7 +42,13 @@ public class CookingController {
 	Logger logger = LoggerFactory.getLogger(CookingController.class);
 
 	@Autowired
-	MealsRepo mealsRepo;
+	private MealsRepo mealsRepo;
+
+	@Autowired
+	private MealPlanRepo mealPlanRepo;
+
+	@Autowired
+	private UserRepo userRepo;
 
 	@RequestMapping(method = RequestMethod.GET, path = "/food/items", produces = "application/json")
 	@CrossOrigin
@@ -57,7 +67,7 @@ public class CookingController {
 			BeanUtils.copyProperties(target, source);
 			target.setRecipes(null);
 			Set<Recipe> targetRecipes = new HashSet<>();
-			if (null != source.getRecipes() && source.getRecipes().size() >0 ) {
+			if (null != source.getRecipes() && source.getRecipes().size() > 0) {
 				for (RecipeEntity sourceRecipe : source.getRecipes()) {
 					Recipe targetRecipe = new Recipe();
 					BeanUtils.copyProperties(targetRecipe, sourceRecipe);
@@ -116,7 +126,7 @@ public class CookingController {
 		return targetList;
 	}
 
-	@RequestMapping(method = RequestMethod.GET, path = "/food/item/ID/{id}")
+	@RequestMapping(method = RequestMethod.GET, path = "/food/item/{id}")
 	@CrossOrigin
 	public com.cooking.model.Meals getFoodbyId(@PathVariable Long id) throws Exception {
 		logger.info("Inside getFoodbyId");
@@ -138,7 +148,7 @@ public class CookingController {
 		return target;
 	}
 
-	@RequestMapping(method = RequestMethod.POST, path = "/food", headers = "content-type=multipart/form-data,application/octet-stream,application/x-www-form-urlencoded", consumes = {
+	@RequestMapping(method = RequestMethod.POST, path = "/food/items", headers = "content-type=multipart/form-data,application/octet-stream,application/x-www-form-urlencoded", consumes = {
 			"application/x-www-form-urlencoded" })
 	@CrossOrigin
 	public MealsEntity addFood(@RequestParam(required = false) String name,
@@ -152,7 +162,7 @@ public class CookingController {
 		MealsEntity meal = new MealsEntity();
 		meal.setName(name);
 		if (null != calories)
-			meal.setCalories(new Long(calories));
+			meal.setCalories(Long.parseLong(calories));
 		if (null != cusineType)
 			meal.setCusineType(cusineType);
 		if (null != mealCategory)
@@ -213,7 +223,7 @@ public class CookingController {
 	@CrossOrigin
 	public String updateFoodPic(@PathVariable Long id, @RequestParam("pic") MultipartFile pic) throws Exception {
 		logger.info("Inside updateFoodPic");
-		MealsEntity sourceMeal = mealsRepo.findById(new Long(id)).get();
+		MealsEntity sourceMeal = mealsRepo.findById(id).get();
 		if (sourceMeal == null) {
 			System.out.println("Nothing to update");
 			return "Nothing to update";
@@ -261,7 +271,7 @@ public class CookingController {
 		if (null != name)
 			meal.setName(name);
 		if (null != calories && calories.length() > 0)
-			meal.setCalories(new Long(calories));
+			meal.setCalories(Long.parseLong(calories));
 		if (null != cusineType)
 			meal.setCusineType(cusineType);
 		if (null != mealCategory)
@@ -294,6 +304,36 @@ public class CookingController {
 		}
 
 		return mealsRepo.save(meal);
+	}
+
+	@RequestMapping(method = RequestMethod.GET, path = "/user/favorite/{userId}/{mealId}")
+	@CrossOrigin
+	public UserEntity addUserMeal(@PathVariable long userId, @PathVariable long mealId) throws Exception {
+		Optional<UserEntity> userOptional = userRepo.findById(userId);
+		UserEntity user = userOptional.get();
+		Optional<MealsEntity> mealOptional = mealsRepo.findById(mealId);
+		MealsEntity meal = mealOptional.get();
+		Set<MealsEntity> mealSet = new HashSet<>();
+		mealSet.add(meal);
+		user.setMeals(mealSet);
+		UserEntity retUser = userRepo.save(user);
+		return retUser;
+	}
+
+	@RequestMapping(method = RequestMethod.POST, path = "/user/meal-plan")
+	@CrossOrigin
+	public boolean userMealPlan(@RequestBody List<MealPlanEntity> mealPlans) throws Exception {
+		logger.info("Inside userMealPlan");
+		for (MealPlanEntity mealPlan : mealPlans) {
+			try {
+				mealPlanRepo.save(mealPlan);
+			} catch (Exception ex) {
+				logger.error("Exception in saving meal plan" + ex.getMessage());
+				throw new Exception(ex.getMessage());
+			}
+		}
+		logger.info("Saved all successfully");
+		return true;
 	}
 
 }
